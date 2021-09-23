@@ -10,9 +10,9 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static('build'))
 
-morgan.token('body', function(req, res, param) {
-    return JSON.stringify(req.body);
-});
+morgan.token('body', function(req) { //,res,param
+    return JSON.stringify(req.body)
+})
 
 app.use(morgan(':method :url :status :req[content-length]  - :response-time ms :body'))
 
@@ -34,23 +34,21 @@ app.get('/api/persons/:id',(request,response,next)=>{
             response.json(person)    
         } 
         else response.status(404).end()
-    })
-    .catch(e=>next(e))
+    }).catch(e=>next(e))
 })
 
 app.delete('/api/persons/:id',(req,res,next)=>{
-    Person.findByIdAndRemove(req.params.id)
-    .then(result=>{
+    Person.findByIdAndRemove(req.params.id).then(result=>{
         res.status(204).end()
-    })
-    .catch(error=> next(error))
+    }).catch(error=> next(error))
 })
-
+/*
 const getFindName=(name)=>{
     Person.find({name}).then(person => {
         return (person)?true:false
     })
 }
+*/
 
 app.post('/api/persons',(request,response,next)=>{
     const {name,number}= request.body
@@ -67,24 +65,19 @@ app.post('/api/persons',(request,response,next)=>{
     })
   
     person.save().then(savedPerson=>{
-      response.json(savedPerson)
-    })
-    .catch(e=>next(e))
+        response.json(savedPerson)
+    }).catch(e=>next(e))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
     const {name,number} = request.body
   
-    const person = {
-      number
-    }
+    const person = { number }
     
-    Person.findByIdAndUpdate(request.params.id, person, {runValidators: true, new: true })
-      .then(updatedPerson => {
+    Person.findByIdAndUpdate(request.params.id, person, {runValidators: true, new: true }).then(updatedPerson => {
         response.json(updatedPerson)
-      })
-      .catch(error => next(error))  
-  })
+    }).catch(error => next(error))  
+})
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
@@ -96,7 +89,7 @@ const errorHandler = (error, request, response, next) => {
     console.error(error.message)
   
     if (error.name === 'CastError') {
-      return response.status(400).send({ error: 'malformatted id' })
+        return response.status(400).send({ error: 'malformatted id' })
     } 
     else if (error.name === 'ValidationError') {
         return response.status(400).json({ error: error.message })
@@ -108,7 +101,7 @@ const errorHandler = (error, request, response, next) => {
 app.use(errorHandler)
 
 
-PORT=process.env.PORT || 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT,()=>{
     console.log(`Servidor Corriendo en Puerto: ${PORT}`)
 })
